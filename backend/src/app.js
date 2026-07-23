@@ -9,6 +9,9 @@ app.use(express.json());
 app.use(cors({origin:process.env.FRONTEND_URL,credentials:true}));
 app.use("/api/inngest", serve({client:inngest, functions}));
 
+app.get("/api/test", (req, res) => {
+    res.send("API is working");
+});
 
 app.get("/",(req,res)=>{
     res.send("OK");
