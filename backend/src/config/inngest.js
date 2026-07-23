@@ -1,6 +1,6 @@
 import { Inngest } from "inngest";
-import connectDB from "./db";
-import userModel from "../models/user.model";
+import connectDB from "./db.js";
+import userModel from "../models/user.model.js";
 
 
 // Create a client to send and receive events
