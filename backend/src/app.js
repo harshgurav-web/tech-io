@@ -1,5 +1,14 @@
 import express from "express";
+import cors from "cors";
+import { serve } from "inngest/express"
+import { functions, inngest } from "./config/inggest";
+
 const app = express();
+
+app.use(express.json());
+app.use(cors({origin:process.env.FRONTEND_URL,credentials:true}));
+app.use("/api/inngest", serve({client:inngest, functions}));
+
 
 app.get("/",(req,res)=>{
     res.send("OK");
