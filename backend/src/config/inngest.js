@@ -2,41 +2,41 @@ import { Inngest } from "inngest";
 import connectDB from "./db.js";
 import userModel from "../models/user.model.js";
 
-
-// Create a client to send and receive events
-export const inngest = new Inngest({ id: "talent-iq" });
+export const inngest = new Inngest({
+  id: "talent-iq",
+});
 
 const syncUser = inngest.createFunction(
-    {id:"syncUser"},
-    {name:"Sync User"},
-    async ({event})=>{
+  {
+    id: "sync-user",
+    event: "clerk/user.created",
+  },
+  async ({ event }) => {
+    await connectDB();
 
-        await connectDB();
-        const {id, email_addresses, first_name,last_name,image_url}= event.data;
-        
-        const newUser = {
-            clerkId:id,
-            email:email_addresses[0].email_address,
-            username: `${first_name} `+`${last_name}`,
-            avatar:image_url,
-        }
-        await userModel.create(newUser)
-        
-    }
-)
+    const { id, email_addresses, first_name, last_name, image_url } = event.data;
+
+    await userModel.create({
+      clerkId: id,
+      email: email_addresses[0].email_address,
+      username: `${first_name} ${last_name}`,
+      avatar: image_url,
+    });
+  }
+);
 
 const deleteUser = inngest.createFunction(
-    {id:"deleteUser"},
-    {name:"Delete User"},
-    async ({event})=>{
+  {
+    id: "delete-user",
+    event: "clerk/user.deleted",
+  },
+  async ({ event }) => {
+    await connectDB();
 
-        await connectDB();
-        const {id}= event.data;
-        
-       await userModel.deleteOne({clerkId:id})
-        
-    }
-)
+    await userModel.deleteOne({
+      clerkId: event.data.id,
+    });
+  }
+);
 
-// Create an empty array where we'll export future Inngest functions
 export const functions = [syncUser, deleteUser];
