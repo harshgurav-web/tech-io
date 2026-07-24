@@ -7,7 +7,15 @@ const app = express();
 
 app.use(express.json());
 app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
-app.use("/api/inngest", serve({ client: inngest, functions }));
+
+const handler = serve({
+  client: inngest,
+  functions,
+});
+
+app.get("/api/inngest", handler);
+app.post("/api/inngest", handler);
+app.put("/api/inngest", handler);
 
 app.get("/api/test", (req, res) => {
   res.send("API is working");

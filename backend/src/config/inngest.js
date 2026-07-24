@@ -2,39 +2,27 @@ import { Inngest } from "inngest";
 import connectDB from "./db.js";
 import userModel from "../models/user.model.js";
 
-// Initialize Inngest client
-export const inngest = new Inngest({
-  id: "talent-iq",
-});
+export const inngest = new Inngest({ id: "talent-iq" });
 
-// Function to handle clerk/user.created
+// User Created
 const syncUser = inngest.createFunction(
-  { id: "sync-user", name: "Sync Clerk User Created" },
+  { id: "sync-user" },
   { event: "clerk/user.created" },
   async ({ event }) => {
     await connectDB();
 
-    const { id, email_addresses, first_name, last_name, image_url } = event.data;
-    const primaryEmail = email_addresses?.[0]?.email_address || "";
-    const fullName = `${first_name || ""} ${last_name || ""}`.trim() || primaryEmail.split("@")[0] || "User";
-
-    await userModel.findOneAndUpdate(
-      { clerkId: id },
-      {
-        clerkId: id,
-        email: primaryEmail,
-        username: fullName,
-        avatar: image_url || "",
-      },
-      { upsert: true, new: true }
-    );
+    await userModel.create({
+      clerkId: event.data.id,
+      email: event.data.email_addresses[0].email_address,
+      username: `${event.data.first_name || ""} ${event.data.last_name || ""}`.trim(),
+      avatar: event.data.image_url,
+    });
   }
 );
 
-
-// Function to handle clerk/user.deleted
+// User Deleted
 const deleteUser = inngest.createFunction(
-  { id: "delete-user", name: "Delete Clerk User" },
+  { id: "delete-user" },
   { event: "clerk/user.deleted" },
   async ({ event }) => {
     await connectDB();
@@ -45,4 +33,4 @@ const deleteUser = inngest.createFunction(
   }
 );
 
-export const functions = [syncUser, updateUser, deleteUser];
+export const functions = [syncUser, deleteUser];
