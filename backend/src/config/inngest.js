@@ -31,29 +31,6 @@ const syncUser = inngest.createFunction(
   }
 );
 
-// Function to handle clerk/user.updated
-const updateUser = inngest.createFunction(
-  { id: "update-user", name: "Update Clerk User" },
-  { event: "clerk/user.updated" },
-  async ({ event }) => {
-    await connectDB();
-
-    const { id, email_addresses, first_name, last_name, image_url } = event.data;
-    const primaryEmail = email_addresses?.[0]?.email_address || "";
-    const fullName = `${first_name || ""} ${last_name || ""}`.trim() || primaryEmail.split("@")[0] || "User";
-
-    await userModel.findOneAndUpdate(
-      { clerkId: id },
-      {
-        clerkId: id,
-        email: primaryEmail,
-        username: fullName,
-        avatar: image_url || "",
-      },
-      { upsert: true, new: true }
-    );
-  }
-);
 
 // Function to handle clerk/user.deleted
 const deleteUser = inngest.createFunction(
