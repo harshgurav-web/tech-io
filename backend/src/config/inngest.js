@@ -6,26 +6,20 @@ export const inngest = new Inngest({ id: "talent-iq" });
 
 // User Created
 const syncUser = inngest.createFunction(
-  { id: "sync-user" },
-  { event: "clerk/user.created" },
+  {
+    id: "sync-user",
+    triggers: [{ event: "clerk/user.created" }], // Triggers belong INSIDE the 1st object argument
+  },
   async ({ event }) => {
     try {
       await connectDB();
 
-      // Handle both raw Clerk payload and wrapped Inngest payload structures
       const userData = event.data.user || event.data;
-
-      // Extract primary email cleanly
-      const email =
-        userData.email_addresses?.[0]?.email_address || "";
-
-      // Fallback username construction
+      const email = userData.email_addresses?.[0]?.email_address || "";
       const firstName = userData.first_name || "";
       const lastName = userData.last_name || "";
-      const fullName = `${firstName} ${lastName}`.trim();
-      const username = fullName || email.split("@")[0] || "User";
+      const username = `${firstName} ${lastName}`.trim() || email.split("@")[0] || "User";
 
-      // Upsert: prevents duplicate key errors if the event triggers twice
       await userModel.findOneAndUpdate(
         { clerkId: userData.id },
         {
@@ -40,15 +34,17 @@ const syncUser = inngest.createFunction(
       console.log(`Successfully synced user ${userData.id} to MongoDB`);
     } catch (error) {
       console.error("Error syncing user to MongoDB:", error);
-      throw error; // Re-throw so Inngest marks the run as failed for observability
+      throw error;
     }
   }
 );
 
 // User Deleted
 const deleteUser = inngest.createFunction(
-  { id: "delete-user" },
-  { event: "clerk/user.deleted" },
+  {
+    id: "delete-user",
+    triggers: [{ event: "clerk/user.deleted" }],
+  },
   async ({ event }) => {
     try {
       await connectDB();
