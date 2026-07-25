@@ -1,6 +1,7 @@
 import { Inngest } from "inngest";
 import connectDB from "./db.js";
 import userModel from "../models/user.model.js";
+import { deleteStreamUser, upsertStreamUser } from "./stream.js";
 
 export const inngest = new Inngest({ id: "talent-iq" });
 
@@ -36,6 +37,12 @@ const syncUser = inngest.createFunction(
       console.error("Error syncing user to MongoDB:", error);
       throw error;
     }
+
+    await upsertStreamUser({
+      id: userData.id.toString(),
+      name: username,
+      image: userData.avatar,
+    })
   }
 );
 
@@ -59,6 +66,7 @@ const deleteUser = inngest.createFunction(
       console.error("Error deleting user from MongoDB:", error);
       throw error;
     }
+    await deleteStreamUser(userData.id.toString());
   }
 );
 
