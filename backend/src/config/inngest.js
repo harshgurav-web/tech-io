@@ -9,7 +9,7 @@ export const inngest = new Inngest({ id: "talent-iq" });
 const syncUser = inngest.createFunction(
   {
     id: "sync-user",
-    triggers: [{ event: "clerk/user.created" }], // Triggers belong INSIDE the 1st object argument
+    triggers: [{ event: "clerk/user.created" }],
   },
   async ({ event }) => {
     try {
@@ -20,29 +20,32 @@ const syncUser = inngest.createFunction(
       const firstName = userData.first_name || "";
       const lastName = userData.last_name || "";
       const username = `${firstName} ${lastName}`.trim() || email.split("@")[0] || "User";
+      const avatar = userData.image_url || userData.profile_image_url || "";
 
+      // 1. Sync to MongoDB
       await userModel.findOneAndUpdate(
         { clerkId: userData.id },
         {
           clerkId: userData.id,
           email: email,
           username: username,
-          avatar: userData.image_url || userData.profile_image_url || "",
+          avatar: avatar,
         },
         { upsert: true, new: true }
       );
-
       console.log(`Successfully synced user ${userData.id} to MongoDB`);
+
+      // 2. Sync to Stream (Moved INSIDE try block so userData & avatar exist)
+      await upsertStreamUser({
+        id: userData.id.toString(),
+        name: username,
+        image: avatar,
+      });
+
     } catch (error) {
-      console.error("Error syncing user to MongoDB:", error);
+      console.error("Error syncing user:", error);
       throw error;
     }
-
-    await upsertStreamUser({
-      id: userData.id.toString(),
-      name: username,
-      image: userData.avatar,
-    })
   }
 );
 
@@ -57,16 +60,19 @@ const deleteUser = inngest.createFunction(
       await connectDB();
       const userData = event.data.user || event.data;
 
+      // 1. Delete from MongoDB
       await userModel.deleteOne({
         clerkId: userData.id,
       });
-
       console.log(`Successfully deleted user ${userData.id} from MongoDB`);
+
+      // 2. Delete from Stream
+      await deleteStreamUser(userData.id.toString());
+
     } catch (error) {
-      console.error("Error deleting user from MongoDB:", error);
+      console.error("Error deleting user:", error);
       throw error;
     }
-    await deleteStreamUser(userData.id.toString());
   }
 );
 
