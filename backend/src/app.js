@@ -5,6 +5,7 @@ import { functions, inngest } from "./config/inngest.js";
 import { clerkMiddleware } from '@clerk/express'
 import { protectRoute } from "./middlewares/protectRoutes.js";
 import chatRouter from "./routes/chat.routes.js";
+import sessionRouter from "./routes/session.routes.js";
 
 const app = express();
 
@@ -23,6 +24,8 @@ app.put("/api/inngest", handler);
 
 //chat routes
 app.get( "/api/chats", chatRouter)
+// session routes
+app.get("api/sessions",sessionRouter)
 
 
 app.get("/video-calls", protectRoute, (req,res)=>{
