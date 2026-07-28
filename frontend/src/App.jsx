@@ -1,30 +1,31 @@
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  SignUpButton,
-  UserButton,
-} from "@clerk/clerk-react";
+import { useUser } from "@clerk/clerk-react";
+import { Toaster } from 'react-hot-toast';
+import { Routes, Route, Navigate } from "react-router";
+import HomePage from "./pages/homePage";
+import AboutPage from "./pages/aboutPage";
+import ProblemPage from "./pages/ProblemPage";
+import Dashboard from "./pages/Dashboard";
 
-import "./App.css";
+
 
 function App() {
+  const { isSignedIn, isLoaded } = useUser();
+  // use for get rid out of flicker effect in dashboard and sudden loading swith o homw
+  if(!isLoaded) return null;
+  
   return (
     <>
-      <header>
-        <SignedOut>
-          <h1>Hello from us</h1>
-          <SignInButton mode="modal" />
-          <SignUpButton mode="modal" />
-        </SignedOut>
 
-        <SignedIn>
-          <h1>If you want then bye from us</h1>
-          <UserButton />
-        </SignedIn>
-      </header>
+      <Routes>
+        <Route path="/" element={!isSignedIn ? <HomePage /> : <Navigate to={"/dashboard"} />} />
+        <Route path="/dashboard" element={isSignedIn ? <Dashboard /> : <Navigate to={"/"} />} />
+
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/problem" element={isSignedIn ? <ProblemPage /> : <Navigate to={"/"} />} />
+      </Routes>
+
+            <Toaster />
     </>
   );
 }
-
 export default App;
