@@ -16,7 +16,7 @@ export async function createSession(req,res) {
       // create session in db
         const session = await sessionModel.create({
             problem: problem,
-            difficulty: difficulty,
+            difficulty: difficulty.toLowerCase(),
             host: userId,
             callID: callID
         })
@@ -49,7 +49,7 @@ export async function createSession(req,res) {
 
 export async function activeSession(req, res) {
     try{
-       const session = sessionModel.find({status: "active"}).populate("host", "username avatar email clerkId")
+       const session = await sessionModel.find({status: "active"}).populate("host", "username avatar email clerkId")
        .sort({createdAt: -1})
        .limit(20);
 
@@ -69,13 +69,13 @@ export async function recentSession(req,res) {
     try{
         // getting sesisons where user is host or partiipent
 
-        const session = sessionModel.find({
+        const session = await sessionModel.find({
             status: "completed",
             $or:[
                 {host: req.user._id},
                 {participent: req.user._id}
             ]
-        }).sort({createdAt: -1}). limit(20);
+        }).sort({createdAt: -1}).limit(20);
 
         res.status(200).json({
             message: "Recent sessions",
@@ -151,7 +151,7 @@ export async function endSession(req,res) {
     
     const {id} = req.params;
     const userId = req.user._id;
-    const session = sessionModel.findById(id);
+    const session = await sessionModel.findById(id);
 
     if(!session) return res.status(404).json({message: "Session not found"});
     
@@ -167,11 +167,10 @@ export async function endSession(req,res) {
     const chat = await chatClient.channel("messaging", session.callID)
     await chat.delete();
     
-    return res.status(200).json({message: "Session ended successfully", session});
-
-        
-    session.status = "completed"
+    session.status = "completed";
     await session.save();
+
+    return res.status(200).json({message: "Session ended successfully", session});
 
     
 

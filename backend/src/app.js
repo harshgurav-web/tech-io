@@ -23,9 +23,9 @@ app.post("/api/inngest", handler);
 app.put("/api/inngest", handler);
 
 //chat routes
-app.get( "/api/chats", chatRouter)
+app.use("/api/chats", chatRouter);
 // session routes
-app.get("api/sessions",sessionRouter)
+app.use("/api/sessions", sessionRouter);
 
 
 app.get("/video-calls", protectRoute, (req,res)=>{

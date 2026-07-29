@@ -21,6 +21,7 @@ function App() {
         <Route path="/dashboard" element={isSignedIn ? <Dashboard /> : <Navigate to={"/"} />} />
 
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/problems" element={isSignedIn ? <ProblemPage /> : <Navigate to={"/"} />} />
         <Route path="/problem" element={isSignedIn ? <ProblemPage /> : <Navigate to={"/"} />} />
       </Routes>
 
