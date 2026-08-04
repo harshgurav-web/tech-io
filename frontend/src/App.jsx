@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from "react-router";
 import HomePage from "./pages/homePage";
 import AboutPage from "./pages/aboutPage";
 import ProblemPage from "./pages/ProblemPage";
+import ProblemIDPage from "./pages/ProblemIDPage";
 import Dashboard from "./pages/Dashboard";
 
 
@@ -22,7 +23,7 @@ function App() {
 
         <Route path="/about" element={<AboutPage />} />
         <Route path="/problems" element={isSignedIn ? <ProblemPage /> : <Navigate to={"/"} />} />
-        <Route path="/problem" element={isSignedIn ? <ProblemPage /> : <Navigate to={"/"} />} />
+        <Route path="/problem/:id" element={isSignedIn ? <ProblemIDPage /> : <Navigate to={"/"} />} />
       </Routes>
 
             <Toaster />
